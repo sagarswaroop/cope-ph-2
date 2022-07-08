@@ -1,0 +1,13 @@
+{
+  "name": "suitecloud-project",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "jest",
+    "uploadScript": "suitecloud file:upload --paths /SuiteScripts/seiu_sl_runbathprocessform.js",
+    "importScript": "suitecloud file:import --paths /SuiteScripts/seiu_cs_showMessageonResult.js"
+  },
+  "devDependencies": {
+    "jest": "^27.4.7",
+    "@oracle/suitecloud-unit-testing": "^1.2.0"
+  }
+}
