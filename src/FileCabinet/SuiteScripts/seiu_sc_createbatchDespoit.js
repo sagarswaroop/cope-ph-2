@@ -673,6 +673,18 @@ define([
           label: "PAC Bank Account",
         }),
         search.createColumn({
+          name: "custbody_hold_acc_conf_no",
+          label: "custbody_hold_acc_conf_no",
+        }),
+        search.createColumn({
+          name: "custbody_non_qualifying_conf_no",
+          label: "custbody_non_qualifying_conf_no",
+        }),
+        search.createColumn({
+          name: "custbody_qualifying_conf_no",
+          label: "custbody_qualifying_conf_no",
+        }),
+        search.createColumn({
           name: "custbody_seiu_support_docs",
           label: "Supporting Document",
         }),
@@ -695,7 +707,10 @@ define([
       holdAcc: "custbody_cust_bank_hold_acc",
       isPAc: "custbody_seiu_pac_bank_acc",
       attachment: "custbody_seiu_support_docs",
-      year: "custbodycope_year"
+      year: "custbodycope_year",
+      qualiConfirmationNo : "custbody_qualifying_conf_no",
+      nonQualiConfirmationNo: "custbody_non_qualifying_conf_no",
+      holdConfirmationNo:"custbody_hold_acc_conf_no"
     };
 
     var copeFromFields = {
@@ -711,7 +726,10 @@ define([
       holdAcc: "custbody_cust_bank_hold_acc",
       isPAc: "custbody_seiu_pac_bank_acc",
       attachment: "custbody_seiu_support_docs",
-      year: "custbodycope_year"
+      year: "custbodycope_year",
+      qualiConfirmationNo : "custbody_qualifying_conf_no",
+      nonQualiConfirmationNo: "custbody_non_qualifying_conf_no",
+      holdConfirmationNo:"custbody_hold_acc_conf_no"
     };
 
     transactionSearchObj.run().each(function (result) {
@@ -821,6 +839,7 @@ define([
               searchResult.localQualiyingFund -
               searchResult.seiuQualiyingFund,
             year: searchResult.year,
+            confirmationNo: searchResult.qualiConfirmationNo
           });
 
           achNonQualRecords.line.push({
@@ -842,6 +861,7 @@ define([
               parseFloat(searchResult.localNonQualiyingFund) -
               parseFloat(searchResult.seiuNonQualiyingFund),
             year: searchResult.year,
+            confirmationNo: searchResult.nonQualiConfirmationNo
           });
 
           return true;
@@ -886,6 +906,7 @@ define([
               searchResult.localQualiyingFund -
               searchResult.seiuQualiyingFund,
             year: searchResult.year,
+            confirmationNo: searchResult.qualiConfirmationNo
           });
 
           wireNonQalRecords.line.push({
@@ -907,6 +928,7 @@ define([
               searchResult.localNonQualiyingFund -
               searchResult.seiuNonQualiyingFund,
             year: searchResult.year,
+            confirmationNo: searchResult.nonQualiConfirmationNo
           });
 
           return true;
@@ -948,6 +970,7 @@ define([
               searchResult.localQualiyingFund -
               searchResult.seiuQualiyingFund,
             year: searchResult.year,
+            confirmationNo: searchResult.qualiConfirmationNo
           });
 
           checkNonQualRecords.line.push({
@@ -969,6 +992,7 @@ define([
               searchResult.localNonQualiyingFund -
               searchResult.seiuNonQualiyingFund,
             year: searchResult.year,
+            confirmationNo: searchResult.nonQualiConfirmationNo
           });
 
           return true;
@@ -1013,6 +1037,7 @@ define([
               searchResult.BankRecDate+ " | ACH",
             adjustAmount: 0,
             year: searchResult.year,
+            confirmationNo: searchResult.holdConfirmationNo
           });
 
           return true;
@@ -1044,6 +1069,7 @@ define([
 
             adjustAmount: 0,
             year: searchResult.year,
+            confirmationNo: searchResult.holdConfirmationNo
           });
 
           return true;
@@ -1073,6 +1099,7 @@ define([
               searchResult.BankRecDate  + "| CHECK",
             adjustAmount: 0,
             year: searchResult.year,
+            confirmationNo: searchResult.holdConfirmationNo
           });
 
           return true;
@@ -1240,6 +1267,14 @@ define([
       });
 
       // log.debug("lineData.lineMemo ", lineData.lineMemo);
+
+      newRecord.setCurrentSublistValue({
+        sublistId: "line",
+        fieldId: "custcol_cd_check_ach_num",
+        // line: i,
+        forceSyncSourcing: true,
+        value: lineData.confirmationNo,
+      });
 
       // log.debug("lineData.amount", parseFloat(lineData.amount));
 

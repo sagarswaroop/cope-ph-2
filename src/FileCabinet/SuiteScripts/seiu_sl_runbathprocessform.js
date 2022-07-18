@@ -2,7 +2,7 @@
  *@NApiVersion 2.x
  *@NScriptType Suitelet
  */
- define([
+define([
   "N/ui/serverWidget",
   "N/redirect",
   "N/search",
@@ -25,29 +25,37 @@
 
       context.response.writePage(currentForm);
     } else {
-      execute();
+      try {
+        execute();
 
-      redirect.toSavedSearchResult({
-        id: "customsearch_seiu_cope_membership_list",
-      });
+        redirect.toSavedSearchResult({
+          id: "customsearch_seiu_cope_membership_list",
+        });
+      } catch (error) {
+        log.error("erro during execution of batch deposit", error);
+        log.debug("erro during execution of batch deposit", error);
+      }
     }
 
     function execute() {
-      var copeFromFields = {
-        copeId: "internalid",
-        customer: "custbody_local_customer",
-        localNonQualiyingFund: "custbody_local_non_qualifying_fund",
-        localQualiyingFund: "custbody_local_qualifying_funds",
-        seiuNonQualiyingFund: "custbody_seiu_non_qualifying_funds",
-        seiuQualiyingFund: "custbody_seiu_qualifying_funds",
-        totalAmount: "amount",
-        paymentMethod: "custbody_ctf_payment_method_header",
-        BankRecDate: "custbody_seiu_cope_bank_rec_date",
-        holdAcc: "custbody_cust_bank_hold_acc",
-        isPAc: "custbody_seiu_pac_bank_acc",
-        attachment: "custbody_seiu_support_docs",
-        year: "custbodycope_year",
-      };
+      // var copeFromFields = {
+      //   copeId: "internalid",
+      //   customer: "custbody_local_customer",
+      //   localNonQualiyingFund: "custbody_local_non_qualifying_fund",
+      //   localQualiyingFund: "custbody_local_qualifying_funds",
+      //   seiuNonQualiyingFund: "custbody_seiu_non_qualifying_funds",
+      //   seiuQualiyingFund: "custbody_seiu_qualifying_funds",
+      //   totalAmount: "amount",
+      //   paymentMethod: "custbody_ctf_payment_method_header",
+      //   BankRecDate: "custbody_seiu_cope_bank_rec_date",
+      //   holdAcc: "custbody_cust_bank_hold_acc",
+      //   isPAc: "custbody_seiu_pac_bank_acc",
+      //   attachment: "custbody_seiu_support_docs",
+      //   year: "custbodycope_year",
+      //   qualiConfirmationNo : "custbody_qualifying_conf_no",
+      //   nonQualiConfirmationNo: "custbody_non_qualifying_conf_no",
+      //   holdConfirmationNo:"custbody_hold_acc_conf_no"
+      // };
 
       //get default data form custom record for cash deposit.
       var accountsData = {
@@ -237,6 +245,13 @@
 
             // log.debug("lineData.lineMemo ", lineData.lineMemo);
 
+            newRecord.setCurrentSublistValue({
+              sublistId: "line",
+              fieldId: "custcol_cd_check_ach_num",
+              line: i,
+              value: lineData.confirmationNo,
+            });
+
             // log.debug("lineData.amount", parseFloat(lineData.amount));
 
             newRecord.setCurrentSublistValue({
@@ -296,7 +311,7 @@
               // forceSyncSourcing: true,
               value: transBody.line_lm2code, //602
             });
-      
+
             newRecord.setCurrentSublistValue({
               sublistId: "line",
               fieldId: "cseg2",
@@ -357,32 +372,45 @@
         }
 
         if (savedDeposit) {
+          
+          var savedCashDeposit = record.load({
+            type: "customtransaction_cd_101",
+
+            id: savedDeposit,
+
+            isDynamic: true,
+          });
+
+          var savedCDBatchId = savedCashDeposit.getValue({
+            fieldId: "custbody_batch_id",
+          });
+
           //   updateCopeform(savedDeposit, sourceRecordList,transBody.forRecord);
 
-          log.debug("saved depsoit is " + savedDeposit);
+          // log.debug("saved depsoit is " + savedDeposit);
 
           //update the deposit no on cope transmittal forms.
-          for (var index = 0; index < sourceRecordList.length; index++) {
-            log.debug("record is update for " + sourceRecordList[index]);
+          // for (var index = 0; index < sourceRecordList.length; index++) {
+          //   log.debug("record is update for " + sourceRecordList[index]);
 
-            var copeForm = record.load({
-              type: "customtransaction108",
-              id: sourceRecordList[index],
-            });
+          //   var copeForm = record.load({
+          //     type: "customtransaction108",
+          //     id: sourceRecordList[index],
+          //   });
 
-            log.debug("copeForm", copeForm);
-            log.debug("transBody.forRecord", transBody.forRecord);
+          //   // log.debug("copeForm", copeForm);
+          //   log.debug("transBody.forRecord", transBody.forRecord);
 
-            copeForm.setValue({
-              fieldId: transBody.forRecord,
-              value: savedDeposit,
-              ignoreFieldChange: true,
-            });
+          //   copeForm.setValue({
+          //     fieldId: transBody.forRecord,
+          //     value: savedDeposit,
+          //     // ignoreFieldChange: true,
+          //   });
 
-            var updatedRecord = copeForm.save();
+          //   var updatedRecord = copeForm.save();
 
-            log.debug("update record is " + updatedRecord);
-          }
+          //   log.debug("update record is " + updatedRecord);
+          // }
 
           //Run adjusment for cope transmittal form.
           for (var j = 0; j < transLines.length; j++) {
@@ -577,7 +605,7 @@
             line_projectCode: accountsData.qaulifyingAccount.projectCode,
             line_paymentMethod: copePaymentMethods.ach,
             line_lm2code: 9,
-            line_lm2Purpose: 105
+            line_lm2Purpose: 105,
           },
 
           line: [],
@@ -599,7 +627,7 @@
             line_projectCode: accountsData.nonQaulifyingAccount.projectCode,
             line_paymentMethod: copePaymentMethods.ach,
             line_lm2code: 9,
-            line_lm2Purpose: 105
+            line_lm2Purpose: 105,
           },
 
           line: [],
@@ -619,7 +647,7 @@
             line_projectCode: accountsData.qaulifyingAccount.projectCode,
             line_paymentMethod: copePaymentMethods.wire,
             line_lm2code: 9,
-            line_lm2Purpose: 105
+            line_lm2Purpose: 105,
           },
 
           line: [],
@@ -639,7 +667,7 @@
             line_projectCode: accountsData.nonQaulifyingAccount.projectCode,
             line_paymentMethod: copePaymentMethods.wire,
             line_lm2code: 9,
-            line_lm2Purpose: 105
+            line_lm2Purpose: 105,
           },
 
           line: [],
@@ -660,7 +688,7 @@
             line_projectCode: accountsData.qaulifyingAccount.projectCode,
             line_paymentMethod: copePaymentMethods.check,
             line_lm2code: 9,
-            line_lm2Purpose: 105
+            line_lm2Purpose: 105,
           },
           line: [],
         };
@@ -680,7 +708,7 @@
             line_projectCode: accountsData.nonQaulifyingAccount.projectCode,
             line_paymentMethod: copePaymentMethods.check,
             line_lm2code: 9,
-            line_lm2Purpose: 105
+            line_lm2Purpose: 105,
           },
           line: [],
         };
@@ -700,7 +728,7 @@
             line_projectCode: accountsData.holdAccount.projectCode,
             line_paymentMethod: copePaymentMethods.ach,
             line_lm2code: 9,
-            line_lm2Purpose: 105
+            line_lm2Purpose: 105,
           },
           line: [],
         };
@@ -720,7 +748,7 @@
             line_projectCode: accountsData.holdAccount.projectCode,
             line_paymentMethod: copePaymentMethods.wire,
             line_lm2code: 9,
-            line_lm2Purpose: 105
+            line_lm2Purpose: 105,
           },
           line: [],
         };
@@ -740,7 +768,7 @@
             line_projectCode: accountsData.holdAccount.projectCode,
             line_paymentMethod: copePaymentMethods.check,
             line_lm2code: 9,
-            line_lm2Purpose: 105
+            line_lm2Purpose: 105,
           },
           line: [],
         };
@@ -789,13 +817,13 @@
         // if (holdRecord.line.length > 0) {
         //   depositDataArray.push(holdRecord);
         // }
-        if(achHoldRecord.line.length>0){
+        if (achHoldRecord.line.length > 0) {
           depositDataArray.push(achHoldRecord);
         }
-        if(wireHoldRecord.line.length>0){
+        if (wireHoldRecord.line.length > 0) {
           depositDataArray.push(wireHoldRecord);
         }
-        if(checkHoldRecord.line.length){
+        if (checkHoldRecord.line.length) {
           depositDataArray.push(checkHoldRecord);
         }
 
@@ -884,6 +912,18 @@
               label: "PAC Bank Account",
             }),
             search.createColumn({
+              name: "custbody_hold_acc_conf_no",
+              label: "custbody_hold_acc_conf_no",
+            }),
+            search.createColumn({
+              name: "custbody_non_qualifying_conf_no",
+              label: "custbody_non_qualifying_conf_no",
+            }),
+            search.createColumn({
+              name: "custbody_qualifying_conf_no",
+              label: "custbody_qualifying_conf_no",
+            }),
+            search.createColumn({
               name: "custbody_seiu_support_docs",
               label: "Supporting Document",
             }),
@@ -907,6 +947,28 @@
           isPAc: "custbody_seiu_pac_bank_acc",
           attachment: "custbody_seiu_support_docs",
           year: "custbodycope_year",
+          qualiConfirmationNo: "custbody_qualifying_conf_no",
+          nonQualiConfirmationNo: "custbody_non_qualifying_conf_no",
+          holdConfirmationNo: "custbody_hold_acc_conf_no",
+        };
+
+        var copeFromFields = {
+          copeId: "internalid",
+          customer: "custbody_local_customer",
+          localNonQualiyingFund: "custbody_local_non_qualifying_fund",
+          localQualiyingFund: "custbody_local_qualifying_funds",
+          seiuNonQualiyingFund: "custbody_seiu_non_qualifying_funds",
+          seiuQualiyingFund: "custbody_seiu_qualifying_funds",
+          totalAmount: "amount",
+          paymentMethod: "custbody_ctf_payment_method_header",
+          BankRecDate: "custbody_seiu_cope_bank_rec_date",
+          holdAcc: "custbody_cust_bank_hold_acc",
+          isPAc: "custbody_seiu_pac_bank_acc",
+          attachment: "custbody_seiu_support_docs",
+          year: "custbodycope_year",
+          qualiConfirmationNo: "custbody_qualifying_conf_no",
+          nonQualiConfirmationNo: "custbody_non_qualifying_conf_no",
+          holdConfirmationNo: "custbody_hold_acc_conf_no",
         };
 
         transactionSearchObj.run().each(function (result) {
@@ -1016,6 +1078,7 @@
                   searchResult.localQualiyingFund -
                   searchResult.seiuQualiyingFund,
                 year: searchResult.year,
+                confirmationNo: searchResult.qualiConfirmationNo,
               });
 
               achNonQualRecords.line.push({
@@ -1037,6 +1100,7 @@
                   parseFloat(searchResult.localNonQualiyingFund) -
                   parseFloat(searchResult.seiuNonQualiyingFund),
                 year: searchResult.year,
+                confirmationNo: searchResult.nonQualiConfirmationNo,
               });
 
               return true;
@@ -1081,6 +1145,7 @@
                   searchResult.localQualiyingFund -
                   searchResult.seiuQualiyingFund,
                 year: searchResult.year,
+                confirmationNo: searchResult.qualiConfirmationNo,
               });
 
               wireNonQalRecords.line.push({
@@ -1102,6 +1167,7 @@
                   searchResult.localNonQualiyingFund -
                   searchResult.seiuNonQualiyingFund,
                 year: searchResult.year,
+                confirmationNo: searchResult.nonQualiConfirmationNo,
               });
 
               return true;
@@ -1143,6 +1209,7 @@
                   searchResult.localQualiyingFund -
                   searchResult.seiuQualiyingFund,
                 year: searchResult.year,
+                confirmationNo: searchResult.qualiConfirmationNo,
               });
 
               checkNonQualRecords.line.push({
@@ -1164,6 +1231,7 @@
                   searchResult.localNonQualiyingFund -
                   searchResult.seiuNonQualiyingFund,
                 year: searchResult.year,
+                confirmationNo: searchResult.nonQualiConfirmationNo,
               });
 
               return true;
@@ -1205,9 +1273,11 @@
                   "Contribution | " +
                   getcustomerDetails(searchResult.customer).displaylocalCode +
                   " | Hold | " +
-                  searchResult.BankRecDate+ " | ACH",
+                  searchResult.BankRecDate +
+                  " | ACH",
                 adjustAmount: 0,
                 year: searchResult.year,
+                confirmationNo: searchResult.holdConfirmationNo,
               });
 
               return true;
@@ -1234,11 +1304,13 @@
                 lineMemo:
                   "Contribution | " +
                   getcustomerDetails(searchResult.customer).displaylocalCode +
-                  " | Hold | "+
-                  searchResult.BankRecDate+ "| WIRE",
+                  " | Hold | " +
+                  searchResult.BankRecDate +
+                  "| WIRE",
 
                 adjustAmount: 0,
                 year: searchResult.year,
+                confirmationNo: searchResult.holdConfirmationNo,
               });
 
               return true;
@@ -1264,10 +1336,12 @@
                 lineMemo:
                   "Contribution | " +
                   getcustomerDetails(searchResult.customer).displaylocalCode +
-                  " | Hold | "+
-                  searchResult.BankRecDate  + "| CHECK",
+                  " | Hold | " +
+                  searchResult.BankRecDate +
+                  "| CHECK",
                 adjustAmount: 0,
                 year: searchResult.year,
+                confirmationNo: searchResult.holdConfirmationNo,
               });
 
               return true;
@@ -1314,8 +1388,12 @@
       log.debug("depositDataArray................", depositDataArray);
 
       if (depositDataArray.length > 0) {
-        for (var index = 0; index < depositDataArray.length; index++) {
-          var singleDateDeposit = depositDataArray[index];
+        for (
+          var bathDepositIndex = 0;
+          bathDepositIndex < depositDataArray.length;
+          bathDepositIndex++
+        ) {
+          var singleDateDeposit = depositDataArray[bathDepositIndex];
 
           // log.debug("singleDateDeposit call ", singleDateDeposit);
 

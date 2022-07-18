@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "test": "jest",
-    "uploadScript": "suitecloud file:upload --paths /SuiteScripts/seiu_sl_runbathprocessform.js",
-    "importScript": "suitecloud file:import --paths /SuiteScripts/seiu_cs_showMessageonResult.js"
+    "uploadScript": "suitecloud file:upload --paths /SuiteScripts/SEIU_ML_Cope_Adjustment.js",
+    "importScript": "suitecloud file:import --paths /SuiteScripts/TVG Scripts/SpeedKeySpeedKey_UE.js"
   },
   "devDependencies": {
     "jest": "^27.4.7",
