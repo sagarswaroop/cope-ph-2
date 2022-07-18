@@ -196,6 +196,8 @@ define([
       var cashDepositPostingDate = transFields.postingDate;
       var cashDepositAttachment = transFields.attachment;
       var cashDepositID = transFields.CashDeposit;
+      var cdBatchID = transFields.originBatchId;
+      
 
       // Cash Deposit Line Fields
       // var cashDepositLineAccount = account;
@@ -228,6 +230,16 @@ define([
       cashDeposit.setValue({
         fieldId: "custbody_bk_acct",
         value: accountCD,
+      });
+
+      cashDeposit.setValue({
+        fieldId: "custbody_seiu_cashdeposit_cd_batchid",
+        value: cdBatchID,
+      });
+
+      cashDeposit.setValue({
+        fieldId: "custbody_seiu_cd_cd_transection_no",
+        value: cashDepositID,
       });
 
       cashDeposit.setValue({

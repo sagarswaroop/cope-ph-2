@@ -68,7 +68,7 @@ define([
             line_projectCode: accountsData.qaulifyingAccount.projectCode,
             line_paymentMethod: copePaymentMethods.ach,
             line_lm2code: 9,
-            line_lm2Purpose: 105
+            line_lm2Purpose: 105,
           },
 
           line: [],
@@ -90,7 +90,7 @@ define([
             line_projectCode: accountsData.nonQaulifyingAccount.projectCode,
             line_paymentMethod: copePaymentMethods.ach,
             line_lm2code: 9,
-            line_lm2Purpose: 105
+            line_lm2Purpose: 105,
           },
 
           line: [],
@@ -110,7 +110,7 @@ define([
             line_projectCode: accountsData.qaulifyingAccount.projectCode,
             line_paymentMethod: copePaymentMethods.wire,
             line_lm2code: 9,
-            line_lm2Purpose: 105
+            line_lm2Purpose: 105,
           },
 
           line: [],
@@ -130,7 +130,7 @@ define([
             line_projectCode: accountsData.nonQaulifyingAccount.projectCode,
             line_paymentMethod: copePaymentMethods.wire,
             line_lm2code: 9,
-            line_lm2Purpose: 105
+            line_lm2Purpose: 105,
           },
 
           line: [],
@@ -151,7 +151,7 @@ define([
             line_projectCode: accountsData.qaulifyingAccount.projectCode,
             line_paymentMethod: copePaymentMethods.check,
             line_lm2code: 9,
-            line_lm2Purpose: 105
+            line_lm2Purpose: 105,
           },
           line: [],
         };
@@ -171,7 +171,7 @@ define([
             line_projectCode: accountsData.nonQaulifyingAccount.projectCode,
             line_paymentMethod: copePaymentMethods.check,
             line_lm2code: 9,
-            line_lm2Purpose: 105
+            line_lm2Purpose: 105,
           },
           line: [],
         };
@@ -191,7 +191,7 @@ define([
             line_projectCode: accountsData.holdAccount.projectCode,
             line_paymentMethod: copePaymentMethods.ach,
             line_lm2code: 9,
-            line_lm2Purpose: 105
+            line_lm2Purpose: 105,
           },
           line: [],
         };
@@ -211,7 +211,7 @@ define([
             line_projectCode: accountsData.holdAccount.projectCode,
             line_paymentMethod: copePaymentMethods.wire,
             line_lm2code: 9,
-            line_lm2Purpose: 105
+            line_lm2Purpose: 105,
           },
           line: [],
         };
@@ -231,7 +231,7 @@ define([
             line_projectCode: accountsData.holdAccount.projectCode,
             line_paymentMethod: copePaymentMethods.check,
             line_lm2code: 9,
-            line_lm2Purpose: 105
+            line_lm2Purpose: 105,
           },
           line: [],
         };
@@ -280,13 +280,13 @@ define([
         // if (holdRecord.line.length > 0) {
         //   depositDataArray.push(holdRecord);
         // }
-        if(achHoldRecord.line.length>0){
+        if (achHoldRecord.line.length > 0) {
           depositDataArray.push(achHoldRecord);
         }
-        if(wireHoldRecord.line.length>0){
+        if (wireHoldRecord.line.length > 0) {
           depositDataArray.push(wireHoldRecord);
         }
-        if(checkHoldRecord.line.length){
+        if (checkHoldRecord.line.length) {
           depositDataArray.push(checkHoldRecord);
         }
 
@@ -295,11 +295,10 @@ define([
 
       log.debug("depositDataArray................", depositDataArray);
 
-
       if (depositDataArray.length > 0) {
-        log.debug("depositDataArray length",depositDataArray.length);
+        log.debug("depositDataArray length", depositDataArray.length);
         for (var index = 0; index < depositDataArray.length; index++) {
-          log.debug("index of depositArry",index);
+          log.debug("index of depositArry", index);
           var singleDateDeposit = depositDataArray[index];
 
           log.debug("singleDateDeposit call ", singleDateDeposit);
@@ -373,7 +372,6 @@ define([
               log.debug("body fields are added");
             }
 
-
             // log.debug("before setLines", transLines.length);
 
             linetotalAmnt += setLines(
@@ -390,21 +388,16 @@ define([
 
             lineCounter++;
 
-            
-
             log.debug(
               "lineCounter singleDateDeposit.line.length  " + lineCounter
             );
 
-            if (
-              lineCounter == 25 ||
-              lineCounter == remainingLines
-            ) {
+            if (lineCounter == 25 || lineCounter == remainingLines) {
               log.debug(
                 "linetotalAmnt" + linetotalAmnt + "lineCounter " + lineCounter
               );
 
-              remainingLines-= lineCounter;
+              remainingLines -= lineCounter;
               newRecord.setValue({
                 fieldId: "custbody_total_batch",
                 value: linetotalAmnt,
@@ -418,33 +411,50 @@ define([
                 log.debug("savedDeposit", savedDeposit);
 
                 if (savedDeposit) {
+                  // load created deposit to sourced in child adjustment deposit.
+                  var savedCashDeposit = record.load({
+                    type: "customtransaction_cd_101",
+                    id: savedDeposit,
+                    isDynamic: true,
+                  });
+
+                  var savedCDBatchId = savedCashDeposit.getValue({
+                    fieldId: "custbody_batch_id",
+                  });
+
+                  log.debug("batch id of saved deposit is " + savedCDBatchId);
+
                   //   updateCopeform(savedDeposit, sourceRecordList,transBody.forRecord);
-  
+
                   log.debug("saved depsoit is " + savedDeposit);
-  
+
                   //update the deposit no on cope transmittal forms.
-                  for (var trnasmittalLine = 0; trnasmittalLine < sourceRecordList.length; trnasmittalLine++) {
+                  for (
+                    var trnasmittalLine = 0;
+                    trnasmittalLine < sourceRecordList.length;
+                    trnasmittalLine++
+                  ) {
                     // log.debug("record is update for " + sourceRecordList[trnasmittalLine]);
-  
+
                     var copeForm = record.load({
                       type: "customtransaction108",
                       id: sourceRecordList[trnasmittalLine],
                     });
-  
+
                     // log.debug("copeForm", copeForm);
                     // log.debug("transBody.forRecord", transBody.forRecord);
-  
+
                     copeForm.setValue({
                       fieldId: transBody.forRecord,
                       value: savedDeposit,
                       ignoreFieldChange: true,
                     });
-  
+
                     var updatedRecord = copeForm.save();
-  
+
                     log.debug("update record is " + updatedRecord);
                   }
-  
+
                   //Run adjusment for cope transmittal form.
                   for (var j = 0; j < transLines.length; j++) {
                     var transmittalId = transLines[j].sourceRecord;
@@ -462,16 +472,22 @@ define([
                             AdjustmentAmount: transLines[j].adjustAmount,
                             TransmittalID: transLines[j].sourceRecord,
                             PaymentMethod: transBody.line_paymentMethod,
-                            Year: transLines[j].year
+                            Year: transLines[j].year,
+                            originBatchId : savedCDBatchId
                           },
                         });
-  
+
                         createdAdjustmentTranList =
-                          adjustment.CreateAdjustmentTransactions(adjustmentRecordList);
-  
-                        log.debug("createdAdjustmentTranList", createdAdjustmentTranList);
+                          adjustment.CreateAdjustmentTransactions(
+                            adjustmentRecordList
+                          );
+
+                        log.debug(
+                          "createdAdjustmentTranList",
+                          createdAdjustmentTranList
+                        );
                         // log.debug("transLines[j].copeId", transmittalId);
-  
+
                         if (createdAdjustmentTranList.length > 0) {
                           record.submitFields({
                             type: "customtransaction108",
@@ -485,7 +501,9 @@ define([
                           });
                         }
                       } else {
-                        if (transBody.forRecord == "custbody_cd_non_qualifying") {
+                        if (
+                          transBody.forRecord == "custbody_cd_non_qualifying"
+                        ) {
                           adjustmentRecordList.push({
                             Fields: {
                               CashDeposit: savedDeposit,
@@ -497,19 +515,22 @@ define([
                               AdjustmentAmount: transLines[j].adjustAmount,
                               TransmittalID: transLines[j].sourceRecord,
                               PaymentMethod: transBody.line_paymentMethod,
-                              Year: transLines[j].year
+                              Year: transLines[j].year,
+                              originBatchId : savedCDBatchId
                             },
                           });
-  
+
                           createdAdjustmentTranList =
-                            adjustment.CreateAdjustmentTransactions(adjustmentRecordList);
-  
+                            adjustment.CreateAdjustmentTransactions(
+                              adjustmentRecordList
+                            );
+
                           log.debug(
                             "createdAdjustmentTranList",
                             createdAdjustmentTranList
                           );
                           // log.debug("transLines[j].copeId", transmittalId);
-  
+
                           if (createdAdjustmentTranList.length > 0) {
                             record.submitFields({
                               type: "customtransaction108",
@@ -528,7 +549,7 @@ define([
                   } // end ajustmenet loop.
                 }
               }
-            
+
               lineCounter = 0;
               sourceRecordList = [];
               createdAdjustmentTranList = [];
@@ -708,9 +729,9 @@ define([
       isPAc: "custbody_seiu_pac_bank_acc",
       attachment: "custbody_seiu_support_docs",
       year: "custbodycope_year",
-      qualiConfirmationNo : "custbody_qualifying_conf_no",
+      qualiConfirmationNo: "custbody_qualifying_conf_no",
       nonQualiConfirmationNo: "custbody_non_qualifying_conf_no",
-      holdConfirmationNo:"custbody_hold_acc_conf_no"
+      holdConfirmationNo: "custbody_hold_acc_conf_no",
     };
 
     var copeFromFields = {
@@ -727,9 +748,9 @@ define([
       isPAc: "custbody_seiu_pac_bank_acc",
       attachment: "custbody_seiu_support_docs",
       year: "custbodycope_year",
-      qualiConfirmationNo : "custbody_qualifying_conf_no",
+      qualiConfirmationNo: "custbody_qualifying_conf_no",
       nonQualiConfirmationNo: "custbody_non_qualifying_conf_no",
-      holdConfirmationNo:"custbody_hold_acc_conf_no"
+      holdConfirmationNo: "custbody_hold_acc_conf_no",
     };
 
     transactionSearchObj.run().each(function (result) {
@@ -805,8 +826,7 @@ define([
             value: searchResult.BankRecDate,
             type: format.Type.DATE,
           });
-          achNonQualRecords.body.PrimaryAttachment =
-            searchResult.attachment;
+          achNonQualRecords.body.PrimaryAttachment = searchResult.attachment;
           achNonQualRecords.body.memo =
             "COPE " + searchResult.BankRecDate + " NQ";
 
@@ -822,13 +842,11 @@ define([
 
           achQualRecords.line.push({
             line_paymentMethod: method,
-            entityName: getcustomerDetails(searchResult.customer)
-              .customerId,
+            entityName: getcustomerDetails(searchResult.customer).customerId,
             localCustomer: searchResult.customer,
             amount: searchResult.localQualiyingFund,
             sourceRecord: searchResult.copeId,
-            localCode: getcustomerDetails(searchResult.customer)
-              .customerCode,
+            localCode: getcustomerDetails(searchResult.customer).customerCode,
             lineMemo:
               "Contribution | " +
               getcustomerDetails(searchResult.customer).displaylocalCode +
@@ -836,21 +854,18 @@ define([
               searchResult.BankRecDate +
               " | ACH",
             adjustAmount:
-              searchResult.localQualiyingFund -
-              searchResult.seiuQualiyingFund,
+              searchResult.localQualiyingFund - searchResult.seiuQualiyingFund,
             year: searchResult.year,
-            confirmationNo: searchResult.qualiConfirmationNo
+            confirmationNo: searchResult.qualiConfirmationNo,
           });
 
           achNonQualRecords.line.push({
             line_paymentMethod: method,
-            entityName: getcustomerDetails(searchResult.customer)
-              .customerId,
+            entityName: getcustomerDetails(searchResult.customer).customerId,
             localCustomer: searchResult.customer,
             amount: searchResult.localNonQualiyingFund,
             sourceRecord: searchResult.copeId,
-            localCode: getcustomerDetails(searchResult.customer)
-              .customerCode,
+            localCode: getcustomerDetails(searchResult.customer).customerCode,
             lineMemo:
               "Contribution | " +
               getcustomerDetails(searchResult.customer).displaylocalCode +
@@ -861,7 +876,7 @@ define([
               parseFloat(searchResult.localNonQualiyingFund) -
               parseFloat(searchResult.seiuNonQualiyingFund),
             year: searchResult.year,
-            confirmationNo: searchResult.nonQualiConfirmationNo
+            confirmationNo: searchResult.nonQualiConfirmationNo,
           });
 
           return true;
@@ -880,21 +895,18 @@ define([
             value: searchResult.BankRecDate,
             type: format.Type.DATE,
           });
-          wireNonQalRecords.body.PrimaryAttachment =
-            searchResult.attachment;
+          wireNonQalRecords.body.PrimaryAttachment = searchResult.attachment;
           wireNonQalRecords.body.memo =
             "GENUS " + searchResult.BankRecDate + " NQ";
 
           wireQalRecords.line.push({
             line_paymentMethod: copePaymentMethods.wire,
-            entityName: getcustomerDetails(searchResult.customer)
-              .customerId,
+            entityName: getcustomerDetails(searchResult.customer).customerId,
             localCustomer: searchResult.customer,
             localCustomer: searchResult.customer,
             amount: searchResult.localQualiyingFund,
             sourceRecord: searchResult.copeId,
-            localCode: getcustomerDetails(searchResult.customer)
-              .customerCode,
+            localCode: getcustomerDetails(searchResult.customer).customerCode,
             lineMemo:
               "Contribution | " +
               getcustomerDetails(searchResult.customer).displaylocalCode +
@@ -903,21 +915,18 @@ define([
               " | WIRE",
 
             adjustAmount:
-              searchResult.localQualiyingFund -
-              searchResult.seiuQualiyingFund,
+              searchResult.localQualiyingFund - searchResult.seiuQualiyingFund,
             year: searchResult.year,
-            confirmationNo: searchResult.qualiConfirmationNo
+            confirmationNo: searchResult.qualiConfirmationNo,
           });
 
           wireNonQalRecords.line.push({
             line_paymentMethod: copePaymentMethods.wire,
-            entityName: getcustomerDetails(searchResult.customer)
-              .customerId,
+            entityName: getcustomerDetails(searchResult.customer).customerId,
             localCustomer: searchResult.customer,
             amount: searchResult.localNonQualiyingFund,
             sourceRecord: searchResult.copeId,
-            localCode: getcustomerDetails(searchResult.customer)
-              .customerCode,
+            localCode: getcustomerDetails(searchResult.customer).customerCode,
             lineMemo:
               "Contribution | " +
               getcustomerDetails(searchResult.customer).displaylocalCode +
@@ -928,7 +937,7 @@ define([
               searchResult.localNonQualiyingFund -
               searchResult.seiuNonQualiyingFund,
             year: searchResult.year,
-            confirmationNo: searchResult.nonQualiConfirmationNo
+            confirmationNo: searchResult.nonQualiConfirmationNo,
           });
 
           return true;
@@ -946,20 +955,17 @@ define([
             value: searchResult.BankRecDate,
             type: format.Type.DATE,
           });
-          checkNonQualRecords.body.PrimaryAttachment =
-            searchResult.attachment;
+          checkNonQualRecords.body.PrimaryAttachment = searchResult.attachment;
           checkNonQualRecords.body.memo =
             "GENUS " + searchResult.BankRecDate + " NQ";
 
           checkQualRecords.line.push({
             line_paymentMethod: method,
-            entityName: getcustomerDetails(searchResult.customer)
-              .customerId,
+            entityName: getcustomerDetails(searchResult.customer).customerId,
             localCustomer: searchResult.customer,
             amount: searchResult.seiuQualiyingFund,
             sourceRecord: searchResult.copeId,
-            localCode: getcustomerDetails(searchResult.customer)
-              .customerCode,
+            localCode: getcustomerDetails(searchResult.customer).customerCode,
             lineMemo:
               "Contribution | " +
               getcustomerDetails(searchResult.customer).displaylocalCode +
@@ -967,21 +973,18 @@ define([
               searchResult.BankRecDate +
               " | CHECK",
             adjustAmount:
-              searchResult.localQualiyingFund -
-              searchResult.seiuQualiyingFund,
+              searchResult.localQualiyingFund - searchResult.seiuQualiyingFund,
             year: searchResult.year,
-            confirmationNo: searchResult.qualiConfirmationNo
+            confirmationNo: searchResult.qualiConfirmationNo,
           });
 
           checkNonQualRecords.line.push({
             line_paymentMethod: method,
-            entityName: getcustomerDetails(searchResult.customer)
-              .customerId,
+            entityName: getcustomerDetails(searchResult.customer).customerId,
             localCustomer: searchResult.customer,
             amount: searchResult.seiuNonQualiyingFund,
             sourceRecord: searchResult.copeId,
-            localCode: getcustomerDetails(searchResult.customer)
-              .customerCode,
+            localCode: getcustomerDetails(searchResult.customer).customerCode,
             lineMemo:
               "Contribution | " +
               getcustomerDetails(searchResult.customer).displaylocalCode +
@@ -992,7 +995,7 @@ define([
               searchResult.localNonQualiyingFund -
               searchResult.seiuNonQualiyingFund,
             year: searchResult.year,
-            confirmationNo: searchResult.nonQualiConfirmationNo
+            confirmationNo: searchResult.nonQualiConfirmationNo,
           });
 
           return true;
@@ -1023,21 +1026,20 @@ define([
 
           achHoldRecord.line.push({
             line_paymentMethod: method,
-            entityName: getcustomerDetails(searchResult.customer)
-              .customerId,
+            entityName: getcustomerDetails(searchResult.customer).customerId,
             localCustomer: searchResult.customer,
             amount: searchResult.totalAmount,
             sourceRecord: searchResult.copeId,
-            localCode: getcustomerDetails(searchResult.customer)
-              .customerCode,
+            localCode: getcustomerDetails(searchResult.customer).customerCode,
             lineMemo:
               "Contribution | " +
               getcustomerDetails(searchResult.customer).displaylocalCode +
               " | Hold | " +
-              searchResult.BankRecDate+ " | ACH",
+              searchResult.BankRecDate +
+              " | ACH",
             adjustAmount: 0,
             year: searchResult.year,
-            confirmationNo: searchResult.holdConfirmationNo
+            confirmationNo: searchResult.holdConfirmationNo,
           });
 
           return true;
@@ -1053,23 +1055,22 @@ define([
 
           wireHoldRecord.line.push({
             line_paymentMethod: copePaymentMethods.wire,
-            entityName: getcustomerDetails(searchResult.customer)
-              .customerId,
+            entityName: getcustomerDetails(searchResult.customer).customerId,
             localCustomer: searchResult.customer,
             localCustomer: searchResult.customer,
             amount: searchResult.totalAmount,
             sourceRecord: searchResult.copeId,
-            localCode: getcustomerDetails(searchResult.customer)
-              .customerCode,
+            localCode: getcustomerDetails(searchResult.customer).customerCode,
             lineMemo:
               "Contribution | " +
               getcustomerDetails(searchResult.customer).displaylocalCode +
-              " | Hold | "+
-              searchResult.BankRecDate+ "| WIRE",
+              " | Hold | " +
+              searchResult.BankRecDate +
+              "| WIRE",
 
             adjustAmount: 0,
             year: searchResult.year,
-            confirmationNo: searchResult.holdConfirmationNo
+            confirmationNo: searchResult.holdConfirmationNo,
           });
 
           return true;
@@ -1085,21 +1086,20 @@ define([
 
           checkHoldRecord.line.push({
             line_paymentMethod: method,
-            entityName: getcustomerDetails(searchResult.customer)
-              .customerId,
+            entityName: getcustomerDetails(searchResult.customer).customerId,
             localCustomer: searchResult.customer,
             amount: searchResult.totalAmount,
             sourceRecord: searchResult.copeId,
-            localCode: getcustomerDetails(searchResult.customer)
-              .customerCode,
+            localCode: getcustomerDetails(searchResult.customer).customerCode,
             lineMemo:
               "Contribution | " +
               getcustomerDetails(searchResult.customer).displaylocalCode +
-              " | Hold | "+
-              searchResult.BankRecDate  + "| CHECK",
+              " | Hold | " +
+              searchResult.BankRecDate +
+              "| CHECK",
             adjustAmount: 0,
             year: searchResult.year,
-            confirmationNo: searchResult.holdConfirmationNo
+            confirmationNo: searchResult.holdConfirmationNo,
           });
 
           return true;
@@ -1294,7 +1294,6 @@ define([
         forceSyncSourcing: true,
         value: parseInt(lineData.sourceRecord),
       });
-
 
       // log.debug(
       //   "parseInt(lineData.sourceRecord)",

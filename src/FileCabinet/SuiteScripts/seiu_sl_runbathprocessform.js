@@ -372,7 +372,7 @@ define([
         }
 
         if (savedDeposit) {
-          
+          // load created deposit to sourced in child adjustment deposit.
           var savedCashDeposit = record.load({
             type: "customtransaction_cd_101",
 
@@ -384,6 +384,8 @@ define([
           var savedCDBatchId = savedCashDeposit.getValue({
             fieldId: "custbody_batch_id",
           });
+
+          log.debug("batch id of saved deposit is "+savedCDBatchId);
 
           //   updateCopeform(savedDeposit, sourceRecordList,transBody.forRecord);
 
@@ -430,6 +432,7 @@ define([
                     TransmittalID: transLines[j].sourceRecord,
                     PaymentMethod: transBody.line_paymentMethod,
                     Year: transLines[j].year,
+                    originBatchId : savedCDBatchId
                   },
                 });
 
@@ -468,6 +471,7 @@ define([
                       TransmittalID: transLines[j].sourceRecord,
                       PaymentMethod: transBody.line_paymentMethod,
                       Year: transLines[j].year,
+                      originBatchId : savedCDBatchId
                     },
                   });
 
