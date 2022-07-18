@@ -357,6 +357,16 @@
         }
 
         if (savedDeposit) {
+          //Load Cash Deposit for CD-BatchId
+          var savedCashDeposit = record.load({
+            type: 'customtransaction_cd_101',
+               id: savedDeposit,
+               isDynamic: true                       
+           });
+           var savedCDBatchId = savedCashDeposit.getValue({
+            fieldId: "custbody_batch_id"
+           });
+
           //   updateCopeform(savedDeposit, sourceRecordList,transBody.forRecord);
 
           log.debug("saved depsoit is " + savedDeposit);
@@ -402,6 +412,7 @@
                     TransmittalID: transLines[j].sourceRecord,
                     PaymentMethod: transBody.line_paymentMethod,
                     Year: transLines[j].year,
+                    CD_BatchId: savedCashDeposit.getValue({fieldId: "custbody_batch_id"}),
                   },
                 });
 
