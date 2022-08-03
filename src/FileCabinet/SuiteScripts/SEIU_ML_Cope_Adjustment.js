@@ -67,9 +67,9 @@ define([
 
     log.debug("deposit data", cashDeposit);
     for (var index = 0; index < cashDeposit.length; index++) {
-      transFields = cashDeposit[index].Fields;
+      var transFields = cashDeposit[index].Fields;
 
-      //   log.debug("LocalCustomer",transFields.LocalCustomer);
+        log.debug("LocalCustomer",transFields.LocalCustomer);
 
       entityName = getcustomerDetails(transFields.LocalCustomer).customerId;
       localCode = getcustomerDetails(transFields.LocalCustomer).customerCode;
@@ -105,10 +105,8 @@ define([
         line_accountCD = accountsData.qaulifyingAccount.lineAccount;
         line_departmentCD = accountsData.qaulifyingAccount.department;
         line_projectCodeCD = accountsData.qaulifyingAccount.projectCode;
-        // CDLINELM2Code = OTHERS;
-        // CDLINELM2Purpose = CONTRIB;
-        CDLINELM2Code = 102;
-        CDLINELM2Purpose = 203;
+        CDLINELM2Code = OTHERS; 
+        CDLINELM2Purpose = 203;  // ---
         cashDepositMemo = transFields.Memo;
       } else if (transFields.Record == "Non-Qualifying") {
         subsidiary = accountsData.qaulifyingAccount.subsidiary;
@@ -119,7 +117,7 @@ define([
         line_projectCode = accountsData.qaulifyingAccount.projectCode;
         vendorBillVendor = vendorBillNonQualifyingVendor;
         vendorBillLineLM2Code = OTHERS;
-        vendorBillLineLM2Purpose = CONTRIB;
+        vendorBillLineLM2Purpose = 203;
         vendorBillLineStateCode = 103; // --- value
         vendorBillTransactionType = 2;
 
@@ -129,8 +127,8 @@ define([
         line_accountCD = accountsData.nonQaulifyingAccount.lineAccount;
         line_departmentCD = accountsData.nonQaulifyingAccount.department;
         line_projectCodeCD = accountsData.nonQaulifyingAccount.projectCode;
-        CDLINELM2Code = 102;
-        CDLINELM2Purpose = 203;
+        CDLINELM2Code = OTHERS; 
+        CDLINELM2Purpose = 203; 
         cashDepositMemo = transFields.Memo + "NQ";
       } else if (transFields.Record == "Hold-Qualifying") {
         subsidiary = accountsData.holdAccount.subsidiary;
@@ -172,11 +170,11 @@ define([
         vendorBillTransactionType = 4;
 
         //cash deposit fields.
-        cashDepositSubsidiay = accountsData.holdAccount.subsidiary;
-        accountCD = accountsData.holdAccount.glAccount; // qual, non-qyal or hold acc.
-        line_accountCD = accountsData.holdAccount.lineAccount;
-        line_departmentCD = accountsData.holdAccount.department;
-        line_projectCodeCD = accountsData.holdAccount.projectCode;
+        cashDepositSubsidiay = accountsData.nonQaulifyingAccount.subsidiary;
+        accountCD = accountsData.nonQaulifyingAccount.glAccount; // qual, non-qyal or hold acc.
+        line_accountCD = accountsData.nonQaulifyingAccount.lineAccount;
+        line_departmentCD = accountsData.nonQaulifyingAccount.department;
+        line_projectCodeCD = accountsData.nonQaulifyingAccount.projectCode;
         CDLINELM2Code = OTHERS;
         CDLINELM2Purpose = CONTRIB;
         cashDepositMemo = transFields.Memo + "NQ";
@@ -211,9 +209,9 @@ define([
       //   var cashDepositLineDepartment = line_department;
       //   var cashDepositLineProjectCode = line_projectCode;
       var cashDepositLineLocalCode = localCode;
-      var cashDepositLineStateCode = 1;
+      var cashDepositLineStateCode = 103; // ---
 
-      // log.debug("cash depsoit field values added");
+      log.debug("cash depsoit field values added");
 
       var cashDeposit = record.create({
         type: "customtransaction_cd_101",
@@ -261,12 +259,17 @@ define([
         value: cashDepositLineAdjustmentAmount,
       });
 
+      // cashDeposit.setValue({
+      //   fieldId: "custbody_batch_process",
+      //   value: true,
+      // });
+
       // Add lines
       var lineNum = cashDeposit.selectNewLine({ sublistId: "line" });
       cashDeposit.setCurrentSublistValue({
         sublistId: "line",
         fieldId: "account",
-        value: line_accountCD,
+        value: accountCD,
       });
       cashDeposit.setCurrentSublistValue({
         sublistId: "line",
@@ -324,11 +327,11 @@ define([
         value: cashDepositLineStateCode,
       });
 
-      if (cashDepositLM2Code)
         cashDeposit.setCurrentSublistValue({
           sublistId: "line",
           fieldId: "cseg1",
           value: CDLINELM2Code,
+          ignoreFieldChange: false
         });
 
       cashDeposit.setCurrentSublistValue({
@@ -362,7 +365,7 @@ define([
       var vendorBillDueDate = vendorBillPostingDate;
       var vendorBillMemo = transFields.Memo;
       var vendorBillAttachment = transFields.attachment;
-      var vendorYear = transFields.Year;
+      var vendorYear = transFields.year;
       var vendorBillDocumentDate = currentDate;
       var vendorBillRequestor = objUser.id;
       var vendorBillDepartment = 101; // Hardcoded "--"
@@ -429,6 +432,7 @@ define([
       // STATE CODE : "--"
       vendorBill.setValue("location", vendorBillLocation);
 
+      log.debug("year on vendor bill is ",vendorYear);
       vendorBill.setValue("custbodycope_year", vendorYear);
 
       vendorBill.setValue(

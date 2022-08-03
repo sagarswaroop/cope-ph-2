@@ -277,9 +277,6 @@ define([
         if (checkNonQualRecords.line.length > 0) {
           depositDataArray.push(checkNonQualRecords);
         }
-        // if (holdRecord.line.length > 0) {
-        //   depositDataArray.push(holdRecord);
-        // }
         if (achHoldRecord.line.length > 0) {
           depositDataArray.push(achHoldRecord);
         }

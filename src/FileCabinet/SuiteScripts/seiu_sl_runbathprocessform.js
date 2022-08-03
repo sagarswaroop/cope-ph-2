@@ -25,16 +25,17 @@ define([
 
       context.response.writePage(currentForm);
     } else {
+      // return;
+      log.debug("code execute after retrun....");
       try {
         execute();
-
-        redirect.toSavedSearchResult({
-          id: "customsearch_seiu_cope_membership_list",
-        });
       } catch (error) {
         log.error("erro during execution of batch deposit", error);
         log.debug("erro during execution of batch deposit", error);
       }
+      redirect.toSavedSearchResult({
+        id: "customsearch_seiu_cope_membership_list",
+      });
     }
 
     function execute() {
@@ -392,30 +393,33 @@ define([
           // log.debug("saved depsoit is " + savedDeposit);
 
           //update the deposit no on cope transmittal forms.
-          // for (var index = 0; index < sourceRecordList.length; index++) {
-          //   log.debug("record is update for " + sourceRecordList[index]);
+          for (var index = 0; index < sourceRecordList.length; index++) {
+            // log.debug("record is update for " + sourceRecordList[index]);
 
-          //   var copeForm = record.load({
-          //     type: "customtransaction108",
-          //     id: sourceRecordList[index],
-          //   });
+            var copeForm = record.load({
+              type: "customtransaction108",
+              id: sourceRecordList[index],
+            });
 
-          //   // log.debug("copeForm", copeForm);
-          //   log.debug("transBody.forRecord", transBody.forRecord);
+            // log.debug("copeForm", copeForm);
+            log.debug("transBody.forRecord", transBody.forRecord);
 
-          //   copeForm.setValue({
-          //     fieldId: transBody.forRecord,
-          //     value: savedDeposit,
-          //     // ignoreFieldChange: true,
-          //   });
+            copeForm.setValue({
+              fieldId: transBody.forRecord,
+              value: savedDeposit,
+              // ignoreFieldChange: true,
+            });
 
-          //   var updatedRecord = copeForm.save();
+            var updatedRecord = copeForm.save();
 
-          //   log.debug("update record is " + updatedRecord);
-          // }
+            log.debug("update record is " + updatedRecord);
+          }
 
           //Run adjusment for cope transmittal form.
           for (var j = 0; j < transLines.length; j++) {
+            // log.debug("j++",j);
+            // log.debug("transLines.length",transLines.length);
+            // // continue;
             var transmittalId = transLines[j].sourceRecord;
             if (transLines[j].adjustAmount > 0) {
               var adjustmentRecordList = [];
@@ -456,6 +460,7 @@ define([
                         createdAdjustmentTranList[0].vendorBill,
                     },
                   });
+                  // break;
                 }
               } else {
                 if (transBody.forRecord == "custbody_cd_non_qualifying") {
@@ -500,6 +505,9 @@ define([
                   }
                 }
               }
+            }else
+            {
+              continue;
             }
           } // end ajustmenet loop.
         }
