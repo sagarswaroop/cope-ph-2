@@ -485,21 +485,23 @@ define([
             log.debug("allCopeFormAttachmetns", allCopeFormAttachmetns);
 
             //Add all the cope attchment to CashDeposit.
+            if (allCopeFormAttachmetns.length > 0);
             for (
               let attachmentlines = 0;
               attachmentlines < allCopeFormAttachmetns.length;
               attachmentlines++
             ) {
-              record.attach({
-                record: {
-                  type: "file",
-                  id: allCopeFormAttachmetns[attachmentlines],
-                },
-                to: {
-                  type: "customtransaction_cd_101",
-                  id: savedDeposit,
-                },
-              });
+              if (allCopeFormAttachmetns[attachmentlines] != "")
+                record.attach({
+                  record: {
+                    type: "file",
+                    id: allCopeFormAttachmetns[attachmentlines],
+                  },
+                  to: {
+                    type: "customtransaction_cd_101",
+                    id: savedDeposit,
+                  },
+                });
             }
 
             //update the deposit no on cope transmittal forms.

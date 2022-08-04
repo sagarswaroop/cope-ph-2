@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "test": "jest",
-    "uploadScript": "suitecloud file:upload --paths /SuiteScripts/seiu_ue_checkDefDep.js",
-    "importScript": "suitecloud file:import --paths /SuiteScripts/SEIU_ML_Cope_Adjustment.js"
+    "uploadScript": "suitecloud file:upload --paths /SuiteScripts/seiu_sl_runbathprocessform.js",
+    "importScript": "suitecloud file:import --paths /SuiteScripts/SEIU_COPE_Transmittal_Form_Reversal_Suitlet.js"
   },
   "devDependencies": {
     "jest": "^27.4.7",
