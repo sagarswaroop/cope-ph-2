@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "test": "jest",
-    "uploadScript": "suitecloud file:upload --paths /SuiteScripts/seiu_mr_batch_deposit.js",
-    "importScript": "suitecloud file:import --paths /SuiteScripts/seiu_fs_currentFormAdjustment.js"
+    "uploadScript": "suitecloud file:upload --paths /SuiteScripts/seiu_ue_checkDefDep.js",
+    "importScript": "suitecloud file:import --paths /SuiteScripts/SEIU_ML_Cope_Adjustment.js"
   },
   "devDependencies": {
     "jest": "^27.4.7",

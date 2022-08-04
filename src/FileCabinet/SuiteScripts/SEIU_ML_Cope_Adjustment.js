@@ -69,7 +69,7 @@ define([
     for (var index = 0; index < cashDeposit.length; index++) {
       var transFields = cashDeposit[index].Fields;
 
-        log.debug("LocalCustomer",transFields.LocalCustomer);
+        // log.debug("LocalCustomer",transFields.LocalCustomer);
 
       entityName = getcustomerDetails(transFields.LocalCustomer).customerId;
       localCode = getcustomerDetails(transFields.LocalCustomer).customerCode;
@@ -211,7 +211,7 @@ define([
       var cashDepositLineLocalCode = localCode;
       var cashDepositLineStateCode = 103; // ---
 
-      log.debug("cash depsoit field values added");
+      
 
       var cashDeposit = record.create({
         type: "customtransaction_cd_101",
@@ -240,12 +240,11 @@ define([
         value: cashDepositID,
       });
 
+      
+
       cashDeposit.setValue({
         fieldId: "trandate",
-        value: format.parse({
-          value: cashDepositPostingDate,
-          type: format.Type.DATE,
-        }),
+        value: new Date(cashDepositPostingDate)
       });
 
       cashDeposit.setValue({ fieldId: "memo", value: cashDepositMemo });
@@ -259,10 +258,10 @@ define([
         value: cashDepositLineAdjustmentAmount,
       });
 
-      // cashDeposit.setValue({
-      //   fieldId: "custbody_batch_process",
-      //   value: true,
-      // });
+      cashDeposit.setValue({
+        fieldId: "custbody_batch_process",
+        value: true,
+      });
 
       // Add lines
       var lineNum = cashDeposit.selectNewLine({ sublistId: "line" });
@@ -346,6 +345,59 @@ define([
         enableSourcing: true,
         ignoreMandatoryFields: true,
       });
+      //********************************* Update Initial Cash deposit adjustment id Update start*******************************************************************************
+      /*if(accountCD==735)
+      {
+        record.submitFields({
+          type: 'customtransaction_cd_101',
+          id: cashDepositID,
+          values: {'custbody_cope_adjustment_cash_deposit': cashDepositRecordID},
+          // options: {
+          //   enablesourcing: boolean,
+        })
+        // var InitialCashDeposit = record.load({
+        //   type: "customtransaction_cd_101",
+        //   id: cashDepositID,
+        //   isDynamic: true,
+        //   //defaultValues: Object
+        // })
+        // InitialCashDeposit.setValue({
+        //   fieldId: "custbody_cope_adjustment_cash_deposit",
+        //   value: cashDepositRecordID,
+        //   ignoreFieldChange: true
+        // });
+        // InitialCashDeposit.save({
+        //   enableSourcing: true,
+        //   ignoreMandatoryFields: true
+        // })
+      }
+      if(accountCD==737)
+      {
+        record.submitFields({
+          type: 'customtransaction_cd_101',
+          id: cashDepositID,
+          values: {'custbody_seiu_adjustment_q_cd': cashDepositRecordID},
+          // options: {
+          //   enablesourcing: boolean,
+        })
+        // var InitialCashDeposit = record.load({
+        //   type: "customtransaction_cd_101",
+        //   id: cashDepositID,
+        //   isDynamic: true,
+        //   //defaultValues: Object
+        // })
+        // InitialCashDeposit.setValue({
+        //   fieldId: "custbody_seiu_adjustment_q_cd",
+        //   value: cashDepositRecordID,
+        //   ignoreFieldChange: true
+        // });
+        // InitialCashDeposit.save({
+        //   enableSourcing: true,
+        //   ignoreMandatoryFields: true
+        // })
+      }*/
+      //********************************* Update Initial Cash deposit adjustment id Update end *******************************************************************************
+
       log.debug("cashDepositRecordID", cashDepositRecordID);
 
       // ********************************* END : Cash Deposit Creation *******************************************************************************
@@ -393,20 +445,22 @@ define([
       // VENDOR INVOICE NO. - Mandatory
       vendorBill.setValue("tranid", vendorBillInvoiceNumber);
 
-      // log.debug("vendorBillPostingDate",format.parse({ value : vendorBillPostingDate, type : format.Type.DATE}));
+      log.debug("vendorBillPostingDate",format.parse({ value : vendorBillPostingDate, type : format.Type.DATE}));
       // POSTING DATE  - Mandatory
       vendorBill.setValue(
         "trandate",
-        format.parse({ value: vendorBillPostingDate, type: format.Type.DATE })
+        new Date(vendorBillPostingDate)
+        // format.parse({ value: vendorBillPostingDate, type: format.Type.DATE })
       );
 
-      // DUE DATE
+      // // DUE DATE
       vendorBill.setValue(
         "duedate",
-        format.parse({ value: vendorBillDueDate, type: format.Type.DATE })
+        new Date(vendorBillDueDate)
+        // format.parse({ value: vendorBillDueDate, type: format.Type.DATE })
       );
 
-      // log.debug("vendorBillMemo",vendorBillMemo);
+      log.debug("vendorBillMemo",vendorBillMemo);
       // MEMO- Mandatory
       vendorBill.setValue("memo", vendorBillMemo);
 
@@ -439,7 +493,29 @@ define([
         "custbody_cope_transaction_type",
         vendorBillTransactionType
       );
-
+  //*****************************************This is for set initial cash deposit id***********************************************************
+      vendorBill.setValue({
+        fieldId:"custbody_cope_initial_cash_deposit",
+        value: cashDepositID,
+        ignoreFieldChange: true
+      })
+      //******************************************This is for set adjustment non qualifying cash deposit id*******************************************************
+      if(vendorBillVendor == 3152)
+      {
+      vendorBill.setValue({
+        fieldId:"custbody_cope_adjustment_cash_deposit",
+        value: cashDepositRecordID,
+        ignoreFieldChange: true
+      })
+      }
+      if(vendorBillVendor == 3140)
+      {
+      vendorBill.setValue({
+        fieldId:"custbody_seiu_adjustment_q_cd",
+        value: cashDepositRecordID,
+        ignoreFieldChange: true
+      })
+      }
       //vendorBill.setValue('approvalstatus', 2);
 
       // Add Expense Lines
@@ -500,10 +576,66 @@ define([
         enableSourcing: true,
         ignoreMandatoryFields: true,
       });
-      log.debug("vendorBillRecordID", vendorBillRecordID);
+      //******************************************** Set adjustment vendor bill on initial cash deposit*************************************************
+      /*if(vendorBillVendor == 3152)
+      {
+        record.submitFields({
+          type: 'customtransaction_cd_101',
+          id: cashDepositID,
+          values: {'custbody_cope_adjustment_vendor_bill': vendorBillRecordID},
+          // options: {
+          //   enablesourcing: boolean,
+        })
+      // var InitialCashDeposit = record.load({
+      //   type: "customtransaction_cd_101",
+      //   id: cashDepositID,
+      //   isDynamic: true,
+      //   //defaultValues: Object
+      // })
+      // InitialCashDeposit.setValue({
+      //   fieldId: "custbody_cope_adjustment_vendor_bill",
+      //   value: vendorBillRecordID,
+      //   ignoreFieldChange: true
+      // });
+      // InitialCashDeposit.save({
+      //   enableSourcing: true,
+      //   ignoreMandatoryFields: true
+      // })
+    }
+    if(vendorBillVendor == 3140)
+      {
+      // var InitialCashDeposit = record.load({
+      //   type: "customtransaction_cd_101",
+      //   id: cashDepositID,
+      //   isDynamic: true,
+      //   //defaultValues: Object
+      // })
+      // InitialCashDeposit.setValue({
+      //   fieldId: "custbody_cope_adjustment_q_vendor_bill",
+      //   value: vendorBillRecordID,
+      //   ignoreFieldChange: true
+      // });
+      // InitialCashDeposit.save({
+      //   enableSourcing: true,
+      //   ignoreMandatoryFields: true
+      // })
+      record.submitFields({
+        type: 'customtransaction_cd_101',
+        id: cashDepositID,
+        values: {'custbody_cope_adjustment_q_vendor_bill': vendorBillRecordID},
+        // options: {
+        //   enablesourcing: boolean,
+      })
+    }*/
+
+//******************************************** Set adjustment vendor bill on adjustment cash cash deposit*****************************************
+  log.debug("vendorBillRecordID", vendorBillRecordID);
+
       adjustmentTranList.push({
         vendorBill: vendorBillRecordID,
         cashDeposit: cashDepositRecordID,
+        // vendorBillVendorId: vendorBillVendor,
+        // cashDepositAccountId: accountCD
       });
 
       // ********************************* END : Vendor Bill Creation *******************************************************************************
@@ -529,7 +661,7 @@ define([
         );
         adjustmentRecord.setValue(
           "custrecord_trans_date",
-          transFields.postingDate
+          new Date(transFields.postingDate)
         );
 
         if (transFields.Record == "Qualifying") {
@@ -571,7 +703,7 @@ define([
         transFields.Record == "Hold-Qualifying" ||
         transFields.Record == "Hold-NonQualifying"
       ) {
-        //log.debug("transFields.Operation",transFields.Operation);
+        log.debug("transFields.Operation",transFields.Operation);
         if (transFields.Operation == "Create") {
           adjustmentRecord = record.create({
             type: "customrecord_cope_adjustment_transaction",
@@ -587,7 +719,7 @@ define([
           );
           adjustmentRecord.setValue(
             "custrecord_trans_date",
-            transFields.postingDate
+            new Date(transFields.postingDate)
           );
 
           if (transFields.Record == "Hold-Qualifying") {

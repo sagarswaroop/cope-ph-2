@@ -93,6 +93,122 @@ define(["N/record","N/search"], function (record,search) {
     return depApproverIdisinactive.isinactive;
   }
 
+  function beforeLoad(context){
+    const currRecord = context.newRecord;
+
+    // const currRecord = record.load({
+    //     type:record.Type.PURCHASE_ORDER,
+    //     id: 286307,
+    //     isDynamic: true
+    // });
+    
+    const totalItemLinse = currRecord.getLineCount({
+      sublistId: "item",
+    });
+
+    if (totalItemLinse > 0) {
+      for (
+        let itemlineIndex = 0;
+        itemlineIndex < totalItemLinse;
+        itemlineIndex++
+      ) {
+
+        currRecord.selectLine({
+          sublistId: "item",
+          line: itemlineIndex
+        })
+        currRecord.setSublistValue({
+          sublistId: "item",
+          fieldId: "department",
+          line: itemlineIndex,
+          value: 29,
+        });
+
+        
+
+        currRecord.setSublistValue({
+          sublistId: "item",
+          fieldId: "department",
+          line: itemlineIndex,
+          value: 42,
+        });
+        currRecord.commitLine({
+          sublistId: "item",
+          // ignoreRecalc: false
+        })
+        // const element = array[itemlineIndex];
+        // const depApproverId = currRecord.getSublistValue({
+        //   sublistId: "item",
+        //   fieldId: "custcol_nsts_gaw_col_approver",
+        //   line: itemlineIndex,
+        // });
+
+        // if (depApproverId) {
+        //   let isinactive =  checkEmployStatus(depApproverId);
+
+        //   log.debug("isinactive",isinactive);
+
+        //   if (isinactive == true) {
+        //     currRecord.selectLine({
+        //       sublistId: "item",
+        //       line: itemlineIndex
+        //     })
+        //     currRecord.setSublistValue({
+        //       sublistId: "item",
+        //       fieldId: "department",
+        //       line: itemlineIndex,
+        //       value: 29,
+        //     });
+
+            
+
+        //     currRecord.setSublistValue({
+        //       sublistId: "item",
+        //       fieldId: "department",
+        //       line: itemlineIndex,
+        //       value: 42,
+        //     });
+        //     currRecord.commitLine({
+        //       sublistId: "item",
+        //       // ignoreRecalc: false
+        //     })
+        //     // const currentDepartment = currRecord.getSublistValue({
+        //     //   sublistId: "item",
+        //     //   fieldId: "department",
+        //     //   line: itemlineIndex,
+        //     // });
+
+        //     // log.debug("currentDepartment",currentDepartment);
+            
+        //     // let departmentRecord = record.load({
+        //     //   type: record.Type.DEPARTMENT,
+        //     //   id: currentDepartment,
+        //     // });
+
+        //     // let approver = departmentRecord.getValue({
+        //     //   fieldId: "custrecord_nsts_gaw_deptapprover",
+        //     // });
+
+        //     // log.debug("approver",approver);
+
+        //     // let isApproverInactive  = checkEmployStatus(approver);
+
+        //     // if(isApproverInactive){
+        //     //   throw("Approver is inactivate of department");
+        //     // }
+
+        //     // currRecord.setSublistValue({
+        //     //   sublistId: "item",
+        //     //   fieldId: "department",
+        //     //   line: itemlineIndex,
+        //     //   value: approver,
+        //     // });
+        //   }
+        // }
+      }
+    }
+  }
+
   return {
     // beforeLoad: beforeLoad,
     beforeSubmit: beforeSubmit,

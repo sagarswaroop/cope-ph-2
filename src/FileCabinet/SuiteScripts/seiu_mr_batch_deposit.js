@@ -101,6 +101,7 @@ define([
               parseFloat(searchResult.seiuNonQualiyingFund),
             year: searchResult.year,
             confirmationNo: searchResult.nonQualiConfirmationNo,
+            line_Attachemnt: searchResult.attachment,
           });
 
           // return true;
@@ -142,6 +143,7 @@ define([
               searchResult.localQualiyingFund - searchResult.seiuQualiyingFund,
             year: searchResult.year,
             confirmationNo: searchResult.qualiConfirmationNo,
+            line_Attachemnt: searchResult.attachment,
           });
 
           wireNonQalRecords.line.push({
@@ -162,6 +164,7 @@ define([
               searchResult.seiuNonQualiyingFund,
             year: searchResult.year,
             confirmationNo: searchResult.nonQualiConfirmationNo,
+            line_Attachemnt: searchResult.attachment,
           });
 
           // return true;
@@ -200,6 +203,7 @@ define([
               searchResult.localQualiyingFund - searchResult.seiuQualiyingFund,
             year: searchResult.year,
             confirmationNo: searchResult.qualiConfirmationNo,
+            line_Attachemnt: searchResult.attachment,
           });
 
           checkNonQualRecords.line.push({
@@ -220,6 +224,7 @@ define([
               searchResult.seiuNonQualiyingFund,
             year: searchResult.year,
             confirmationNo: searchResult.nonQualiConfirmationNo,
+            line_Attachemnt: searchResult.attachment,
           });
 
           // return true;
@@ -264,6 +269,7 @@ define([
             adjustAmount: 0,
             year: searchResult.year,
             confirmationNo: searchResult.holdConfirmationNo,
+            line_Attachemnt: searchResult.attachment,
           });
 
           // return true;
@@ -295,6 +301,7 @@ define([
             adjustAmount: 0,
             year: searchResult.year,
             confirmationNo: searchResult.holdConfirmationNo,
+            line_Attachemnt: searchResult.attachment,
           });
 
           // return true;
@@ -324,6 +331,7 @@ define([
             adjustAmount: 0,
             year: searchResult.year,
             confirmationNo: searchResult.holdConfirmationNo,
+            line_Attachemnt: searchResult.attachment,
           });
 
           // return true;
@@ -342,6 +350,7 @@ define([
     var sourceRecordList = [];
     var createdAdjustmentTranList = [];
     var linetotalAmnt = 0;
+    let allCopeFormAttachmetns = [];
 
     // log.debug("singleDateDeposit", singleDateDeposit);
 
@@ -411,19 +420,17 @@ define([
           });
 
         log.debug("body fields are added");
+        var foramtedDate = new Date(transBody.postingDate);
+        log.debug("transBody.postingDate", foramtedDate);
 
-        // if (transBody.postingDate)
-        //   newRecord.setValue({
-        //     fieldId: "trandate",
-        //     value: format.parse({
-        //       value: transBody.postingDate,
-        //       type: format.Type.DATETIME,
-        //     }),
-        //   });
-        // log.debug("transBody.postingDate", transBody.postingDate);
+        if (transBody.postingDate)
+          newRecord.setValue({
+            fieldId: "trandate",
+            value: foramtedDate,
+          });
       }
 
-      // log.debug("before setLines", transLines.length);
+      log.debug("before setLines", transLines.length);
 
       linetotalAmnt += setLines(
         sourceRecordList,
@@ -433,13 +440,15 @@ define([
         i
       );
 
+      allCopeFormAttachmetns.push(transLines[i].line_Attachemnt);
+
       lineCounter++;
 
-      log.debug("lineCounter singleDateDeposit.line.length  " + lineCounter);
+      // log.debug("lineCounter singleDateDeposit.line.length  " + lineCounter);
 
       if (lineCounter == 25 || lineCounter == remainingLines) {
         log.debug(
-          "linetotalAmnt" + linetotalAmnt + "lineCounter " + lineCounter
+          "linetotalAmnt " + linetotalAmnt + "lineCounter " + lineCounter
         );
 
         remainingLines -= lineCounter;
@@ -467,38 +476,58 @@ define([
               fieldId: "custbody_batch_id",
             });
 
-            log.debug("batch id of saved deposit is " + savedCDBatchId);
+            // log.debug("batch id of saved deposit is " + savedCDBatchId);
 
             //   updateCopeform(savedDeposit, sourceRecordList,transBody.forRecord);
 
-            log.debug("saved depsoit is " + savedDeposit);
+            // log.debug("saved depsoit is " + savedDeposit);
+
+            log.debug("allCopeFormAttachmetns", allCopeFormAttachmetns);
+
+            //Add all the cope attchment to CashDeposit.
+            for (
+              let attachmentlines = 0;
+              attachmentlines < allCopeFormAttachmetns.length;
+              attachmentlines++
+            ) {
+              record.attach({
+                record: {
+                  type: "file",
+                  id: allCopeFormAttachmetns[attachmentlines],
+                },
+                to: {
+                  type: "customtransaction_cd_101",
+                  id: savedDeposit,
+                },
+              });
+            }
 
             //update the deposit no on cope transmittal forms.
-            // for (
-            //   var trnasmittalLine = 0;
-            //   trnasmittalLine < sourceRecordList.length;
-            //   trnasmittalLine++
-            // ) {
-            //   // log.debug("record is update for " + sourceRecordList[trnasmittalLine]);
+            for (
+              var trnasmittalLine = 0;
+              trnasmittalLine < sourceRecordList.length;
+              trnasmittalLine++
+            ) {
+              // log.debug("record is update for " + sourceRecordList[trnasmittalLine]);
 
-            //   var copeForm = record.load({
-            //     type: "customtransaction108",
-            //     id: sourceRecordList[trnasmittalLine],
-            //   });
+              var copeForm = record.load({
+                type: "customtransaction108",
+                id: sourceRecordList[trnasmittalLine],
+              });
 
-            //   // log.debug("copeForm", copeForm);
-            //   // log.debug("transBody.forRecord", transBody.forRecord);
+              // log.debug("copeForm", copeForm);
+              // log.debug("transBody.forRecord", transBody.forRecord);
 
-            //   copeForm.setValue({
-            //     fieldId: transBody.forRecord,
-            //     value: savedDeposit,
-            //     ignoreFieldChange: true,
-            //   });
+              copeForm.setValue({
+                fieldId: transBody.forRecord,
+                value: savedDeposit,
+                ignoreFieldChange: true,
+              });
 
-            //   var updatedRecord = copeForm.save();
+              var updatedRecord = copeForm.save();
 
-            //   log.debug("update record is " + updatedRecord);
-            // }
+              log.debug("update record is " + updatedRecord);
+            }
 
             //Run adjusment for cope transmittal form.
             for (var j = 0; j < transLines.length; j++) {
@@ -517,7 +546,7 @@ define([
                       AdjustmentAmount: transLines[j].adjustAmount,
                       TransmittalID: transLines[j].sourceRecord,
                       PaymentMethod: transBody.line_paymentMethod,
-                      Year: transLines[j].year,
+                      year: transLines[j].year,
                       originBatchId: savedCDBatchId,
                     },
                   });
@@ -558,7 +587,7 @@ define([
                         AdjustmentAmount: transLines[j].adjustAmount,
                         TransmittalID: transLines[j].sourceRecord,
                         PaymentMethod: transBody.line_paymentMethod,
-                        Year: transLines[j].year,
+                        year: transLines[j].year,
                         originBatchId: savedCDBatchId,
                       },
                     });
@@ -1363,16 +1392,21 @@ define([
   function reduce(context) {
     // log.debug("reduce context", context);
 
-    var cdObj = JSON.parse(context.values); //read the data
+    try {
+      var cdObj = JSON.parse(context.values); //read the data
 
-    // let cdObj = (data.values)[0];
-    // log.debug(" cdObj ", cdObj);
+      // let cdObj = (data.values)[0];
+      log.debug(" cdObj ", cdObj);
 
-    createDeposit(cdObj);
+      createDeposit(cdObj);
+    } catch (error) {
+      log.debug("error during reduce execution", error);
+      log.error("error during reduce execution", error);
+    }
   }
 
   function summarize(context) {
-    log.debug("submmarize call...", context);
+    log.debug("Batch Deposit process End...");
   }
 
   return {
