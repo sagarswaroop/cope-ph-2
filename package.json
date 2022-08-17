@@ -4,7 +4,7 @@
   "scripts": {
     "test": "jest",
     "uploadScript": "suitecloud file:upload --paths /SuiteScripts/seiu_sl_runbathprocessform.js",
-    "importScript": "suitecloud file:import --paths /SuiteScripts/seiu_cs_showMessageonResult.js"
+    "importScript": "suitecloud file:import --paths /SuiteScripts/seiu_ue_copeform_amountAsign.js"
   },
   "devDependencies": {
     "jest": "^27.4.7",
