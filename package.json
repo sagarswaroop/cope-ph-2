@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "test": "jest",
-    "uploadScript": "suitecloud file:upload --paths /SuiteScripts/seiu_sl_runbathprocessform.js",
+    "uploadScript": "suitecloud file:upload --paths /SuiteScripts/seiu_ue_copeform_amountAsign.js",
     "importScript": "suitecloud file:import --paths /SuiteScripts/seiu_ue_copeform_amountAsign.js"
   },
   "devDependencies": {

@@ -33,7 +33,7 @@ define(["N/record", "N/search", "./SEIU_ML_Cope_Adjustment.js"], function (recor
     });
 
     // Execute below code when Status is approved.
-    if (tranStatus == "4") {
+    // if (tranStatus == "4") {
       var totalQualifiedAmount = 0;
       var totalUnqualifiedAmount = 0;
 
@@ -218,7 +218,7 @@ define(["N/record", "N/search", "./SEIU_ML_Cope_Adjustment.js"], function (recor
           details: userError.message,
         });
       }
-    }
+    // }
   }
 
   function calculatePayRollDeduction(amount, days) {
@@ -438,72 +438,97 @@ define(["N/record", "N/search", "./SEIU_ML_Cope_Adjustment.js"], function (recor
     );
   }
 
-  function calcuateObligatinAmount(context) {
+  function afterSubmit(context){
     log.debug("calcuateObligatinAmount process start");
+  
+      var currRecord = context.newRecord;
 
-    var currRecord = context.newRecord;
-    var totalAmount = 0;
-
-    var year = currRecord.getValue({
-      fieldId: "custbodycope_year",
-    });
-
-    var localCustomer = currRecord.getValue({
-      fieldId: "custbody_local_customer",
-    });
-
-    log.debug("year is " + year + " local customer is " + localCustomer);
-
-    // serach form with and give result of calucated obligation amount.
-    if (localCustomer && year) {
-      var transactionSearchObj = search.create({
-        type: "transaction",
-        filters: [
-          ["type", "anyof", "Custom108"],
-          "AND",
-          ["custbodycope_year", "is", year],
-          "AND",
-          ["custbody_seiu_qualifying_funds", "isnotempty", ""],
-          "AND",
-          ["custbody_seiu_non_qualifying_funds", "isnotempty", ""],
-          "AND",
-          ["custbody_status", "anyof", "4"],
-          "AND",
-          ["mainline", "is", "T"],
-          "AND",
-          ["custbody_local_customer", "anyof", localCustomer],
-        ],
-        columns: [
-          search.createColumn({
-            name: "formulacurrency",
-            summary: "SUM",
-            formula:
-              "{custbody_seiu_qualifying_funds}+(2/3*{custbody_seiu_non_qualifying_funds})",
-            label: "obligationResult",
-          }),
-        ],
+  
+      var year = currRecord.getValue({
+        fieldId: "custbodycope_year",
       });
-      var searchResultCount = transactionSearchObj.runPaged().count;
-      log.debug("transactionSearchObj result count", searchResultCount);
-      transactionSearchObj.run().each(function (result) {
-        // .run().each has a limit of 4,000 results
-        totalAmount = result.getValue({
+  
+      var localCustomer = currRecord.getValue({
+        fieldId: "custbody_local_customer",
+      });
+  
+      log.debug("year is " + year + " local customer is " + localCustomer);
+      var totalAmount = 0;
+      if (localCustomer && year) {
+        
+      totalAmount =  calculatedContributionAmount(localCustomer,year);
+
+       setObligationRecordTotalAmount(localCustomer,year,"custrecord220",totalAmount);
+
+      totalAmount = calcuteReversalQaulifingAmount(getcustomerDetails(localCustomer),year);
+      setObligationRecordTotalAmount(localCustomer,year,"",totalAmount);
+
+       calcuteReversalNonQaulifingAmount(getcustomerDetails(localCustomer),year);
+       calcuteReversalHoldAmount(getcustomerDetails(localCustomer),year);
+  
+        // runAdjustment(context);
+      }
+  
+    
+      
+      // serach form with and give result of calucated obligation amount.
+     
+  }
+
+  function calculatedContributionAmount(localCustomer,year) {
+    var totalAmount = 0;
+    var transactionSearchObj = search.create({
+      type: "transaction",
+      filters: [
+        ["type", "anyof", "Custom108"],
+        "AND",
+        ["custbodycope_year", "is", year],
+        "AND",
+        ["custbody_seiu_qualifying_funds", "isnotempty", ""],
+        "AND",
+        ["custbody_seiu_non_qualifying_funds", "isnotempty", ""],
+        "AND",
+        ["custbody_status", "anyof", "4"],
+        "AND",
+        ["mainline", "is", "T"],
+        "AND",
+        ["custbody_local_customer", "anyof", localCustomer],
+      ],
+      columns: [
+        search.createColumn({
           name: "formulacurrency",
           summary: "SUM",
-        });
-
-        log.debug("resulst is" + totalAmount);
-        return true;
+          formula:
+            "{custbody_seiu_qualifying_funds}+(2/3*{custbody_seiu_non_qualifying_funds})",
+          label: "obligationResult",
+        }),
+      ],
+    });
+    var searchResultCount = transactionSearchObj.runPaged().count;
+    log.debug("transactionSearchObj result count", searchResultCount);
+    transactionSearchObj.run().each(function (result) {
+      // .run().each has a limit of 4,000 results
+      totalAmount = result.getValue({
+        name: "formulacurrency",
+        summary: "SUM",
       });
 
-      /*
-     transactionSearchObj.id="customsearch1654783312828";
-     transactionSearchObj.title="cope obligation distribution sk script (copy)";
-     var newSearchId = transactionSearchObj.save();
-     */
+      log.debug("resulst is" + totalAmount);
+      return true;
+    });
 
-      // serach record to set total amount in cope obligation field.
-      var customrecord_seiu_cope_obligationSearchObj = search.create({
+    return totalAmount;
+
+    /*
+   transactionSearchObj.id="customsearch1654783312828";
+   transactionSearchObj.title="cope obligation distribution sk script (copy)";
+   var newSearchId = transactionSearchObj.save();
+   */
+  }
+
+  function setObligationRecordTotalAmount(localCustomer,year,obliationFieldId,amount){
+       // serach record to set total amount in cope obligation field.
+       var customrecord_seiu_cope_obligationSearchObj = search.create({
         type: "customrecord_seiu_cope_obligation",
         filters: [
           ["custrecord218", "anyof", localCustomer],
@@ -525,32 +550,35 @@ define(["N/record", "N/search", "./SEIU_ML_Cope_Adjustment.js"], function (recor
         var recordId = result.getValue({
           name: "internalid"
         });
-
+  
         log.debug("record id is " + recordId);
-
+  
         if (totalAmount > 0) {
-
+  
           var updatedRecord = record.submitFields({
             type: "customrecord_seiu_cope_obligation",
             id: recordId,
-            values: { "custrecord220": totalAmount }
+            values: { obliationFieldId: amount }
           });
-
+  
           log.debug("Updated record is " + updatedRecord);
-
+  
         }
         return true;
       });
 
+      //localCustomer,year,obliationFieldId,amount
+
+      
+  
       /*
    customrecord_seiu_cope_obligationSearchObj.id="customsearch1654784421346";
    customrecord_seiu_cope_obligationSearchObj.title="COPE Obligation Search sk (copy)";
    var newSearchId = customrecord_seiu_cope_obligationSearchObj.save();
    */
-    }
-
-    // runAdjustment(context);
   }
+
+  
 
   // get the customer data to to set on line level.
   function getcustomerDetails(recordId) {
@@ -719,6 +747,6 @@ define(["N/record", "N/search", "./SEIU_ML_Cope_Adjustment.js"], function (recor
 
   return {
     beforeSubmit: determineCopeFunds,
-    afterSubmit: calcuateObligatinAmount,
+    afterSubmit: afterSubmit,
   };
 });
