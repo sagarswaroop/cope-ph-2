@@ -14,6 +14,13 @@ define([
     wire: 3,
   };
 
+  // cash deposit payment method internal id's
+  var copePaymentMethods = {
+    ach: 1,
+    check: 2,
+    wire: 5,
+  };
+
   function dataMap(
     searchResult,
     achQualRecords,
@@ -440,7 +447,11 @@ define([
         i
       );
 
-      allCopeFormAttachmetns.push(transLines[i].line_Attachemnt);
+      if(transLines[i].line_Attachemnt){
+        allCopeFormAttachmetns.push(transLines[i].line_Attachemnt);
+      }
+
+      
 
       lineCounter++;
 
@@ -1009,13 +1020,6 @@ define([
 
       // cope transmittal payment method internal id's
 
-      // cash deposit payment method internal id's
-      var copePaymentMethods = {
-        ach: 1,
-        check: 2,
-        wire: 5,
-      };
-
       //get default data form custom record for cash deposit.
       var accountsData = {
         qaulifyingAccount: getAccount(1),
@@ -1291,7 +1295,7 @@ define([
           copeObjects[key] = rowResult.getValue(value);
         }
 
-        // log.debug("cope objects are ", copeObjects);
+        log.debug("cope objects are ", copeObjects);
 
         //map cope transmital fiels to batch deposit object
         dataMap(
@@ -1319,10 +1323,10 @@ define([
         });
       }
       if (achNonQualRecords.line.length > 0) {
-        // log.debug({
-        //   title: "achNonQualRecords",
-        //   details: achNonQualRecords,
-        // });
+        log.debug({
+          title: "achNonQualRecords",
+          details: achNonQualRecords,
+        });
 
         context.write({
           key: "achNonQualRecords",
@@ -1330,10 +1334,10 @@ define([
         });
       }
       if (wireQalRecords.line.length > 0) {
-        // log.debug({
-        //   title: "wireQalRecords",
-        //   details: wireQalRecords,
-        // });
+        log.debug({
+          title: "wireQalRecords",
+          details: wireQalRecords,
+        });
 
         context.write({
           key: "wireQalRecords",
@@ -1341,10 +1345,10 @@ define([
         });
       }
       if (wireNonQalRecords.line.length > 0) {
-        // log.debug({
-        //   title: "wireNonQalRecords",
-        //   details: wireNonQalRecords,
-        // });
+        log.debug({
+          title: "wireNonQalRecords",
+          details: wireNonQalRecords,
+        });
 
         context.write({
           key: "wireNonQalRecords",
@@ -1388,6 +1392,7 @@ define([
       }
     } catch (ex) {
       log.error({ title: "map: error deleting records", details: ex });
+      log.debug({ title: "map: error deleting records", details: ex });
     }
   }
 
