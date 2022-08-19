@@ -63,6 +63,18 @@ define(["N/ui/serverWidget", "N/record"], function (serverWidget, record) {
       form.clientScriptModulePath =
         "SuiteScripts/SEIU_COPE_tranmittal_form_clientScript_for_reversal.js";
     }
+  
+    if (context.newRecord.type == "customtransaction108") {
+      let isReversal = false;
+      
+      isReversal = context.currentRecord.getValue({
+        fieldId: "custbody_seiu_ctf_is_reversal_create",
+      });
+
+      if (isReversal) {
+        window.location.reload;
+      }
+    }
   }
   return {
     beforeLoad: beforeLoad,

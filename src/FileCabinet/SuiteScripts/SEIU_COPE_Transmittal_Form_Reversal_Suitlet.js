@@ -343,11 +343,13 @@ define([
               // defaultValues: Object
             });
 
-            cashRefundRecord.setValue({
-              fieldId: "trandate",
-              value: postingDate ? postingDate : new Date(),
-              ignoreFieldChange: true,
-            });
+            if(postingDate){
+              cashRefundRecord.setValue({
+                fieldId: "trandate",
+                value: postingDate ? postingDate : new Date(),
+                ignoreFieldChange: true,
+              });
+            }
 
             const savedRefund = cashRefundRecord.save({
               enableSourcing: true,
@@ -361,6 +363,17 @@ define([
             context.response.writePage(form);
             form.clientScriptModulePath =
               "SuiteScripts/SEIU_COPE_tranmittal_form_clientScript_for_reversal.js";
+            
+            if(savedRefund){
+
+              const updatedCopeForm = record.submitFields({
+                type: "customtransaction108",
+                id: copeId,
+                values: {"custbody_seiu_ctf_is_reversal_create": true}
+              });
+
+              log.debug("",`udpated cope form id is ${updatedCopeForm}`);
+            }
           }
         }
       }
