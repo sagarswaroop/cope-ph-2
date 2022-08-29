@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "test": "jest",
-    "uploadScript": "suitecloud file:upload --paths /SuiteScripts/SEIU_COPE_Transmittal_Form_Reversal_Suitlet.js",
+    "uploadScript": "suitecloud file:upload --paths /SuiteScripts/SEIU_COPE_Transmittal_Form_Reversal_Userevent.js",
     "importScript": "suitecloud file:import --paths /SuiteScripts/wa_cashdeposit_create_line_transactions.js"
   },
   "devDependencies": {
