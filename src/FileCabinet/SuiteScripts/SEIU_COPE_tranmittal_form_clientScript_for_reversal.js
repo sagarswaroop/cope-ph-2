@@ -20,9 +20,10 @@ define(['N/url','N/ui/message'], function(url,message) {
             scriptId: 'customscript_seiu_ctf_reversal_suitlet',
             deploymentId: 'customdeploy_seiu_ctf_reversal_form',
             params: {'array_item': JSON.stringify(CTFInternalId)},
-            returnExternalUrl: false
+            // returnExternalUrl: t
         });
-        window.open(output);
+        // window.open(output,);
+        window.location.replace(output);
         // url.resolveScript({
         //     deploymentId: string*,
         //     scriptId: string*,
@@ -33,7 +34,7 @@ define(['N/url','N/ui/message'], function(url,message) {
     function pageInit(context) {
 
         let myMsg = message.create({
-            title: 'SIEU | Cash Depoist process',
+            title: 'SIEU | Cash Deposit process',
             message: 'Selected Cash deposit processed Successfuly',
             type: message.Type.INFORMATION
         });
